@@ -25,6 +25,8 @@ def greet(message):
 @bot.message_handler(func=hasKos)
 def correctKos(message):
     bot.reply_to(message, "س")
+    bot.send_sticker(chat_id=message.chat.id,
+                     sticker="https://t.me/BrighterThanTheBlueSky/18006")
 
 
 bot.polling()
