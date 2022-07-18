@@ -1,11 +1,48 @@
+from email import message
 import os
+from attr import has
+from dotenv import load_dotenv
 from requests import request
-import requests
+import mysql.connector
+from mysql.connector import Error
+import pandas as pd
+import csv
 import telebot
 
-API_KEY = "5574991692:AAF9OchV350KsuPne9S5PrGr3G2W-1yZf9k"
+
+load_dotenv()
+API_KEY = os.getenv('API_KEY')
 
 bot = telebot.TeleBot(API_KEY)
+
+
+header = ['chat_id', 'message', 'reply']
+
+
+def addFilter(chat_id, message, reply):
+    with open('filters.csv', 'a') as f:
+        writer = csv.writer(f)
+        writer.writerow([chat_id, message, reply])
+
+# pw = "kos"
+
+
+# def create_server_connection(host_name, user_name, user_password):
+#     connection = None
+#     try:
+#         connection = mysql.connector.connect(
+#             host=host_name,
+#             user=user_name,
+#             passwd=user_password
+#         )
+#         print("MySQL Database connection successful")
+#     except Error as err:
+#         print(f"Error: '{err}'")
+
+#     return connection
+
+
+# connection = create_server_connection("localhost", "root", pw)
 
 
 def hasKos(message):
@@ -17,7 +54,7 @@ def hasKos(message):
     return False
 
 
-@bot.message_handler(commands=["Greet"])
+@bot.message_handler(commands=["greet"])
 def greet(message):
     bot.reply_to(message, "kos mikham")
 
@@ -27,6 +64,46 @@ def correctKos(message):
     bot.reply_to(message, "س")
     bot.send_sticker(chat_id=message.chat.id,
                      sticker="https://t.me/BrighterThanTheBlueSky/18006")
+
+
+@bot.message_handler(commands=["Filter"])
+def addFilter(message):
+    if message.text == "/Filter" or message.text == "/Filter ":
+        bot.reply_to(message, "Filter cannot be empty")
+        return
+    command = message.text.replace("/Filter ", "", 1)
+    if message.reply_to_message is None:
+        bot.reply_to(message, "Filter cannot be empty")
+        return
+    print("added filter "+"{command}"+" with " +
+          "{message.reply_to_message.text}")
+    with open('filters.csv', 'a') as f:
+        writer = csv.writer(f)
+        writer.writerow([message.chat.id, command,
+                        message.reply_to_message.text])
+
+
+def check_filter(message):
+    data = pd.read_csv("filters.csv")
+    x = data.chat_id
+    print(x)
+    return True
+
+
+# @bot.message_handler(func=check_filter)
+# def javab(message):
+#     print(message.chat.id)
+
+
+def isKos(message):
+    if message.text == "کس":
+        return True
+    return False
+
+
+@bot.message_handler(func=isKos)
+def addFilter(message):
+    bot.reply_to(message, "میخوام")
 
 
 bot.polling()
