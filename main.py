@@ -1,20 +1,21 @@
-from email import message
+import csv
 import os
+from email import message
+
+import mysql.connector
+import pandas as pd
+import telebot
+from telebot.types import Message as tg_msg
 from attr import has
 from dotenv import load_dotenv
-from requests import request
-import mysql.connector
 from mysql.connector import Error
-import pandas as pd
-import csv
-import telebot
-
+from requests import request
 
 load_dotenv()
 API_KEY = os.getenv('API_KEY')
+DEF_STICKER = 'CAACAgIAAxkBAANQYwABAkfaBCofCnm1PiZ33BqNkXWyAAJSFAACmZFpSoLElaTaSqdLKQQ'
 
 bot = telebot.TeleBot(API_KEY)
-
 
 header = ['chat_id', 'message', 'reply']
 
@@ -45,7 +46,7 @@ def addFilter(chat_id, message, reply):
 # connection = create_server_connection("localhost", "root", pw)
 
 
-def hasKos(message):
+def hasKos(message: tg_msg):
     request = message.text
     validKos = ["کث", "کص", "کوبص", "کوبث", "کوص", "کوث"]
     for kos in validKos:
@@ -55,19 +56,19 @@ def hasKos(message):
 
 
 @bot.message_handler(commands=["greet"])
-def greet(message):
+def greet(message: tg_msg):
     bot.reply_to(message, "kos mikham")
 
 
 @bot.message_handler(func=hasKos)
-def correctKos(message):
+def correctKos(message: tg_msg):
     bot.reply_to(message, "س")
     bot.send_sticker(chat_id=message.chat.id,
-                     sticker="https://t.me/BrighterThanTheBlueSky/18006")
+                     sticker=DEF_STICKER)
 
 
 @bot.message_handler(commands=["Filter"])
-def addFilter(message):
+def addFilter(message: tg_msg):
     if message.text == "/Filter" or message.text == "/Filter ":
         bot.reply_to(message, "Filter cannot be empty")
         return
@@ -83,7 +84,7 @@ def addFilter(message):
                         message.reply_to_message.text])
 
 
-def check_filter(message):
+def check_filter(message: tg_msg):
     data = pd.read_csv("filters.csv")
     x = data.chat_id
     print(x)
@@ -91,19 +92,18 @@ def check_filter(message):
 
 
 # @bot.message_handler(func=check_filter)
-# def javab(message):
+# def javab(message : tg_msg):
 #     print(message.chat.id)
 
 
-def isKos(message):
+def isKos(message: tg_msg):
     if message.text == "کس":
         return True
     return False
 
 
 @bot.message_handler(func=isKos)
-def addFilter(message):
+def addFilter(message: tg_msg):
     bot.reply_to(message, "میخوام")
-
 
 bot.polling()
